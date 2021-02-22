@@ -8,4 +8,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Crypto\Crypto.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="ExampleTextFile.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

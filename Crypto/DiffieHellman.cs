@@ -19,8 +19,6 @@ namespace Crypto
                 PrivateKey _privKey = new PrivateKey(alias.ExportECPrivateKey());
                 PublicKey _pubKey = new PublicKey(alias.ExportSubjectPublicKeyInfo());
 
-
-
                 ret = new DHKeyPair(_privKey,_pubKey);
 
 
@@ -53,20 +51,21 @@ namespace Crypto
                 
 
                 ReadOnlySpan<byte> spriv= new ReadOnlySpan<byte>(from.PrivateKey.Value);
-                ReadOnlySpan<byte> spub = new ReadOnlySpan<byte>(from.PublicKey.Value);
+                
                 
                 alias.ImportECPrivateKey(spriv, out int bytesRead);
-                
-                alias.ImportSubjectPublicKeyInfo(spub, out bytesRead);
+                ECDiffieHellmanPublicKey topub;
 
-                ECDiffieHellman _tmp = ECDiffieHellman.Create();
-                
-                ReadOnlySpan<byte> topubread = new ReadOnlySpan<byte>(to.Value);
-                _tmp.ImportSubjectPublicKeyInfo(topubread, out bytesRead);
+                using (ECDiffieHellman _tmp = ECDiffieHellman.Create())
+                {
+                    ReadOnlySpan<byte> topubread = new ReadOnlySpan<byte>(to.Value);
+                    _tmp.ImportSubjectPublicKeyInfo(topubread, out bytesRead);
 
-                ECDiffieHellmanPublicKey topub = _tmp.PublicKey;
-                _tmp.Dispose();
+                    topub = _tmp.PublicKey;
+                }
+              
                 byte[] derivedKey = alias.DeriveKeyMaterial(topub);
+                ret = new DHDerivedKey(derivedKey);
 
             }
 
