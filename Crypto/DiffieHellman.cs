@@ -11,25 +11,88 @@ namespace Crypto
         {
             DHKeyPair ret = null;
 
-            using (ECDiffieHellmanCng alias = new ECDiffieHellmanCng())
+
+            using (ECDiffieHellman alias = ECDiffieHellman.Create())
             {
+               
 
-                alias.KeyDerivationFunction = ECDiffieHellmanKeyDerivationFunction.Hash;
-                alias.HashAlgorithm = CngAlgorithm.Sha256;
+                PrivateKey _privKey = new PrivateKey(alias.ExportECPrivateKey());
+                PublicKey _pubKey = new PublicKey(alias.ExportSubjectPublicKeyInfo());
 
-                ret = new DHKeyPair(new PrivateKey(alias.ExportECPrivateKey()),
-                    new PublicKey(alias.PublicKey.ToByteArray()));
 
-                
+
+                ret = new DHKeyPair(_privKey,_pubKey);
+
 
             }
+
+
+
+                //using (ECDiffieHellmanCng alias = new ECDiffieHellmanCng())
+                //{
+
+                //    alias.KeyDerivationFunction = ECDiffieHellmanKeyDerivationFunction.Hash;
+                //    alias.HashAlgorithm = CngAlgorithm.Sha256;
+
+                //    ret = new DHKeyPair(new PrivateKey(alias.ExportECPrivateKey()),
+                //        new PublicKey(alias.PublicKey.ToByteArray()));
+
+
+
+                //}
 
             return ret;
         }
 
-        public DHDerivedKey GenrateDerivedKey(DHKeyPair from, PublicKey to)
+        public DHDerivedKey GenerateDerivedKey(DHKeyPair from, PublicKey to)
         {
-            throw new NotImplementedException();
+            DHDerivedKey ret = null;
+
+            using (ECDiffieHellman alias = ECDiffieHellman.Create())
+            {
+                
+
+                ReadOnlySpan<byte> spriv= new ReadOnlySpan<byte>(from.PrivateKey.Value);
+                ReadOnlySpan<byte> spub = new ReadOnlySpan<byte>(from.PublicKey.Value);
+                
+                alias.ImportECPrivateKey(spriv, out int bytesRead);
+                
+                alias.ImportSubjectPublicKeyInfo(spub, out bytesRead);
+
+                ECDiffieHellman _tmp = ECDiffieHellman.Create();
+                
+                ReadOnlySpan<byte> topubread = new ReadOnlySpan<byte>(to.Value);
+                _tmp.ImportSubjectPublicKeyInfo(topubread, out bytesRead);
+
+                ECDiffieHellmanPublicKey topub = _tmp.PublicKey;
+                _tmp.Dispose();
+                byte[] derivedKey = alias.DeriveKeyMaterial(topub);
+
+            }
+
+
+                //using (ECDiffieHellmanCng alias = new ECDiffieHellmanCng())
+                //{
+                //    ReadOnlySpan<byte> source = new ReadOnlySpan<byte>(from.PrivateKey.Value);
+                //    int butesRead = 0;
+                //    alias.ImportECPrivateKey(source, out butesRead);
+
+
+                //    alias.KeyDerivationFunction = ECDiffieHellmanKeyDerivationFunction.Hash;
+                //    alias.HashAlgorithm = CngAlgorithm.Sha256;
+
+
+                //    CngKey k = CngKey.Import(to.Value, CngKeyBlobFormat.EccPublicBlob);
+
+                //    byte[] derivedKey = alias.DeriveKeyMaterial(k);
+
+                //    ret = new DHDerivedKey(derivedKey);
+
+
+
+                //}
+
+                return ret;
         }
     }
 }

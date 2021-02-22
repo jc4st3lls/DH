@@ -1,4 +1,5 @@
 ﻿using System;
+using Crypto;
 
 namespace DHPoc
 {
@@ -107,7 +108,29 @@ namespace DHPoc
 
         private static void CreateKeys(string aliasName)
         {
-            throw new NotImplementedException();
+            IDiffieHellman _dh = new DiffieHellman();
+
+            var _keys = _dh.GenerateKeyPair();
+
+            Console.WriteLine($"Private Key:\n {BitConverter.ToString(_keys.PrivateKey.Value)}");
+            Console.WriteLine($"Public Key:\n {BitConverter.ToString(_keys.PublicKey.Value)}");
+
+         
+            WriteBinFile($"{aliasName}.private.key", _keys.PrivateKey.Value);
+            Console.WriteLine($"Private Key File:\n {aliasName}.private.key");
+
+            WriteTextFile($"{aliasName}.public.key", Convert.ToBase64String(_keys.PublicKey.Value));
+            Console.WriteLine($"Public Key File:\n {aliasName}.public.key");
+        }
+
+        private static void WriteTextFile(string fileName, string content)
+        {
+            System.IO.File.WriteAllText(fileName, content);
+        }
+
+        private static void WriteBinFile(string fileName, byte[] content)
+        {
+            System.IO.File.WriteAllBytes(fileName, content);
         }
 
         static void Usage()

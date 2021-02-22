@@ -4,7 +4,7 @@ namespace Crypto
     public interface IDiffieHellman
     {
         DHKeyPair GenerateKeyPair();
-        DHDerivedKey GenrateDerivedKey(DHKeyPair from, PublicKey to);
+        DHDerivedKey GenerateDerivedKey(DHKeyPair from, PublicKey to);
     }
     public abstract class Key
     {
