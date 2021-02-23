@@ -1,8 +1,0 @@
-﻿https://docs.microsoft.com/es-es/dotnet/api/system.security.cryptography.ecdiffiehellman?view=netcore-3.1
-
-ECDiffieHellman Clase
-
-Proporciona una clase base abstracta de la que pueden derivar las implementaciones
-de algoritmos Diffie-Hellman de curva elíptica (ECDH).
-Esta clase proporciona el conjunto básico de operaciones que todas las implementaciones
-ECDH deben admitir.

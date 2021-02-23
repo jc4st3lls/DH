@@ -1,0 +1,9 @@
+﻿Diffie-Hellman
+Ir a la navegaciónIr a la búsqueda
+El protocolo criptográfico Diffie-Hellman,1​ debido a Whitfield Diffie y Martin Hellman (autores también del problema de Diffie-Hellman o DHP), es un protocolo de establecimiento de claves entre partes que no han tenido contacto previo, utilizando un canal inseguro y de manera anónima (no autenticada).
+
+Se emplea generalmente como medio para acordar claves simétricas que serán empleadas para el cifrado de una sesión (establecer clave de sesión). Siendo no autenticado, sin embargo, provee las bases para varios protocolos autenticados.
+
+Su seguridad radica en la extrema dificultad (conjeturada, no demostrada) de calcular logaritmos discretos en un cuerpo finito.
+
+Whitfield Diffie y Martin Hellman recibieron el prestigioso premio A.M. Turing de 2015 de la Association for Computer Machinery en 2016 por este trabajo "que revolucionó la seguridad informática".2​

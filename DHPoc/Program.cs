@@ -13,6 +13,8 @@ namespace DHPoc
         private const string ARG_CREATETEXT = "-encrypt";
         private const string ARG_READTEXT = "-decrypt";
         private const string ARG_PUB = "-pub";
+        private const string ARG_TEXT = "-t";
+        private const string ARG_BINARY = "-b";
 
         private const string extfile = ".dhpoc";
 
@@ -36,15 +38,16 @@ namespace DHPoc
                 {
                     IsOk = IsOk && (args[2].Equals(ARG_CREATEKEYS)|| args[2].Equals(ARG_REMOVEKEYS));
                 }
-                else if (args.Length == 6)
+                else if (args.Length == 7)
                 {
                     IsOk = IsOk
                         && (args[2].Equals(ARG_CREATETEXT)|| args[2].Equals(ARG_READTEXT))
-                        && !string.IsNullOrEmpty(args[3])
-                        && args[4].Equals(ARG_PUB)
-                        && !string.IsNullOrEmpty(args[5]);
+                        && (args[3].Equals(ARG_BINARY)|| args[3].Equals(ARG_TEXT))
+                        && !string.IsNullOrEmpty(args[4])
+                        && args[5].Equals(ARG_PUB)
+                        && !string.IsNullOrEmpty(args[6]);
                 }
-                 
+                
 
 
                 if(!IsOk)
@@ -53,57 +56,81 @@ namespace DHPoc
                 }
                 else
                 {
-                    string alias = args[1];
-                    string action = args[2];
-
-                    string textfilename=string.Empty;
-                    string pubfilename=string.Empty;
-
-                    if (args.Length == 6)
+                    
+                    string _error = "";
+                    try
                     {
-                        textfilename = args[3];
-                        pubfilename = args[5];
-                        if (!ExistFile(textfilename))
+                        string alias = args[1];
+                        string action = args[2];
+
+                        string filename = string.Empty;
+                        string pubfilename = string.Empty;
+                        bool binary=false;
+                        if (args.Length == 7)
                         {
-                            Console.WriteLine($"{textfilename} does not exist!");
-                            IsOk = false;
+                            binary = args[3].Equals(ARG_BINARY);
+                            filename = args[4];
+                            pubfilename = args[6];
+                            if (!ExistFile(filename))
+                            {
+                                Console.WriteLine($"{filename} does not exist!");
+                                IsOk = false;
+                            }
+                            else if (!ExistFile(pubfilename))
+                            {
+                                Console.WriteLine($"{pubfilename} does not exist!");
+                                IsOk = false;
+                            }
                         }
-                        else if (!ExistFile(pubfilename))
+                        if (IsOk)
                         {
-                            Console.WriteLine($"{pubfilename} does not exist!");
-                            IsOk = false;
+                            switch (action)
+                            {
+                                case ARG_CREATEKEYS:
+                                    {
+                                        CreateKeys(alias);
+                                        break;
+                                    }
+                                case ARG_REMOVEKEYS:
+                                    {
+                                        RemoveKeys(alias);
+                                        break;
+                                    }
+                                case ARG_CREATETEXT:
+                                    {
+
+                                        CreateEncryptFileFor(alias, filename, pubfilename,binary);
+                                        break;
+                                    }
+
+                                case ARG_READTEXT:
+                                    {
+
+                                        RestoreEncryptFileFrom(alias, filename, pubfilename,binary);
+                                        break;
+                                    }
+                            }
+
                         }
                     }
-                    if (IsOk)
+                    catch(CryptographicException){
+                        _error="Cryptographic exception!!!";
+                    }
+                    catch (Exception)
                     {
-                        switch (action)
+                        _error = "Exception!!";
+                    }
+                    finally
+                    {
+                        if (!string.IsNullOrEmpty(_error))
                         {
-                            case ARG_CREATEKEYS:
-                                {
-                                    CreateKeys(alias);
-                                    break;
-                                }
-                            case ARG_REMOVEKEYS:
-                                {
-                                    RemoveKeys(alias);
-                                    break;
-                                }
-                            case ARG_CREATETEXT:
-                                {
-
-                                    CreateTextFor(alias, textfilename, pubfilename);
-                                    break;
-                                }
-
-                            case ARG_READTEXT:
-                                {
-
-                                    ReadTextFrom(alias, textfilename, pubfilename);
-                                    break;
-                                }
+                            Console.WriteLine(_error);
                         }
 
+                        Console.WriteLine("Bye.");
                     }
+
+ 
 
                 }
                 
@@ -129,7 +156,7 @@ namespace DHPoc
             return System.IO.File.Exists(fileName);
         }
 
-        private static void ReadTextFrom(string aliasName,string textFileName, string pubFileName)
+        private static void RestoreEncryptFileFrom(string aliasName,string fileName, string pubFileName, bool isBinary)
         {
             DHKeyPair _aliaskeys = RestoreKeys(aliasName);
             PublicKey _publickeyto = RestorePublicKey(pubFileName);
@@ -138,19 +165,29 @@ namespace DHPoc
             DHDerivedKey _derived = _dh.GenerateDerivedKey(_aliaskeys, _publickeyto);
 
             Console.WriteLine($"Derived Key:\n {BitConverter.ToString(_derived.Value)}");
-            byte[] IV = System.Text.Encoding.UTF8.GetBytes(textFileName.Replace(extfile,string.Empty));
+
+            string fileout = fileName.Replace(extfile, string.Empty);
+            byte[] IV = System.Text.Encoding.UTF8.GetBytes(fileout);
             ICypher cypher = new AesCypher(_derived.Value, IV);
 
-            byte[] read=ReadBinFile(textFileName);
+            byte[] read=ReadBinFile(fileName);
 
             string content=cypher.Decrypt(read);
+            if (isBinary)
+            {
+                var bcontent = Convert.FromBase64String(content);
+                WriteBinFile(fileout, bcontent);
+            }
+            else
+            {
+                WriteTextFile(fileout, content);
+            }
+            
 
-            WriteTextFile(textFileName.Replace(extfile, string.Empty), content);
-
-            Console.WriteLine($"{textFileName}{extfile} decrypt file created.");
+            Console.WriteLine($"{fileout} decrypt file created.");
         }
 
-        private static void CreateTextFor(string aliasName,string textFileName,string pubFileName)
+        private static void CreateEncryptFileFor(string aliasName,string fileName,string pubFileName,bool isBinary)
         {
             DHKeyPair _aliaskeys = RestoreKeys(aliasName);
             PublicKey _publickeyto = RestorePublicKey(pubFileName);
@@ -159,14 +196,22 @@ namespace DHPoc
             DHDerivedKey _derived = _dh.GenerateDerivedKey(_aliaskeys, _publickeyto);
 
             Console.WriteLine($"Derived Key:\n {BitConverter.ToString(_derived.Value)}");
-            byte[] IV =System.Text.Encoding.UTF8.GetBytes(textFileName);
+            byte[] IV =System.Text.Encoding.UTF8.GetBytes(fileName);
             ICypher cypher = new AesCypher(_derived.Value, IV);
+            byte[] encrypted;
+            if (isBinary)
+            {
+                var content = ReadBinFile(fileName);
+                encrypted = cypher.Encrypt(Convert.ToBase64String(content));
+            }
+            else{
+                encrypted = cypher.Encrypt(ReadTextFile(fileName));
+            }
+            
 
-            byte[] encrypted=cypher.Encrypt(ReadTextFile(textFileName));
+            WriteBinFile($"{fileName}{extfile}", encrypted);
 
-            WriteBinFile($"{textFileName}{extfile}", encrypted);
-
-            Console.WriteLine($"{textFileName}{extfile} encrypt file created.");
+            Console.WriteLine($"{fileName}{extfile} encrypt file created.");
         }
 
         private static PublicKey RestorePublicKey(string pubFileName)
@@ -230,10 +275,20 @@ namespace DHPoc
         {
             var msg = "Usage:\n";
             msg += "\tDHPoc -alias [alias] -createKeys\n";
-            msg += "\tDHPoc -alias [alias] -encrypt [File] -pub [dstPublicKeyFile]\n";
-            msg += "\tDHPoc -alias [alias] -decrypt [File] -pub [srcPublicKeyFile]\n";
+            msg += "\tDHPoc -alias [alias] -encrypt -t|-b [File] -pub [dstPublicKeyFile]\n";
+            msg += "\tDHPoc -alias [alias] -decrypt -t|-b [File] -pub [srcPublicKeyFile]\n";
             msg += "\tDHPoc -alias [alias] -removeKeys\n";
-            msg += "\n\n\t\t\tBy @jc4st3lls";
+            msg += "\t ** -t = text file.\n";
+            msg += "\t ** -b = binary file.\n";
+            msg += "\n\n Examples:\n";
+            msg += "\tCreate keys: DHPoc -alias Bob -createKeys\n";
+            msg += "\tRemove keys: DHPoc -alias Bob -removeKeys\n";
+            msg += "\tEncrypt binary file: DHPoc -alias Alice -encrypt -b Diffie-Hellman.png -pub Bob.public.key\n";
+            msg += "\tDecrypt binary file: DHPoc -alias Bob -decrypt -b Diffie-Hellman.png.dhpoc -pub Alice.public.key\n";
+            msg += "\tEncrypt text file: DHPoc -alias Alice -encrypt -t sample.txt -pub Bob.public.key\n";
+            msg += "\tDecrypt text file: DHPoc -alias Bob -decrypt -t sample.txt.dhpoc -pub Alice.public.key\n";
+
+            msg += "\n\n\t\t\t\t\t\tBy @jc4st3lls";
             Console.WriteLine(msg);
         }
     }
