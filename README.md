@@ -29,7 +29,7 @@ dotnet publish -c Release -r win10-x64 --self-contained false
 
 Aquí informació sobre identificadors d'entorn d'execució https://docs.microsoft.com/es-es/dotnet/core/rid-catalog
 
-Exemples (l'ordre dels paràmetres és necessàri, utilitzem Bob i Alice com a àlies)
+Exemples (l'ordre dels paràmetres és necessàri, utilitzem Bob i Alice com a àlies, els fitxers xifrats portan extensió .dhpoc)
 
 ```
 Crear parell de claus: Crea una clau privada [alias].private.key i una clau pública [alias].public.key
