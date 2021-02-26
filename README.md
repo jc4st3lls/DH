@@ -1,1 +1,5 @@
-# DH
+# Diffie-Hellman + AES for exchange secrets
+Xifrar fitxers amb algotitmes de xifratge simetrics, sense intercanvi de claus secretes.
+
+# Descripció
+Dins del móm dels algoritmes de xifratge, existeixen dos grans grups, els algoritmes asimetrics, i els algoritmes simetrics. Els primers requereixen dues claus, una per xifrar, i una altre per desxifrar. En canvi, els simetrics utilitzen la mateixa tant per xifrar com per desxifrar. Els primers, són més segurs, pel fet que l'origen, l'actor que xifra la informació, no ha de transmetre la clau de xifratge al destí, per que aquest la desxifri, ja que el propi algoritme estableix els mecanismes necessàris per que aquest pugui calcular la clau per desxifrar la informació. El problema d'aquest algoritmes és el rendiment, que és més notori quan més creix la informació a xifrar, cosa que fa que es dessestimint en processos que requereixen xifratge i i un alt rendiment de transmissió, com poden ser, sistemes de missatgeria instantànea, establiment de sessions segures en servidors d'aplicacions, sistemes blockchain, tradding, etc.
