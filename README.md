@@ -55,13 +55,7 @@ DHPoc -alias Bob -decrypt -t sample.txt.dhpoc -pub Alice.public.key
 # Conclusió
 I per acabar només dir que, és un algoritme molt utilitzat en el passat i en el present (amb algunes de les seves variants, corbes elíptiques), i que el podem trobar amb eines conegudes com Line, Telegram, Signal, la xarxa Tor, nginx i molts d'altres. Jo personalment, el vaig utilitzar en el meu treball de fi de carrega per desenvolupar un sistema de missatgeria segur, en Java 1.4, quan encara anavem amb modems de 64k. Va suposar una MH :-)
 
-Donacions
-
-BTC = bc1q33wmuc0lcwh4krchfmxrt4jak3v628z658f85j
-
-TRX = TRdxjgLv4nr8GYwsdXkUv4ZwCCTvfMqgnS
-
-ETH = 0x3582cf65c158b23bbbaee3e3a3158ce4b5d99978
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/jcastellsgH)
 
 :_)
 
